@@ -42,7 +42,11 @@ const syncUserUpdation = inngest.createFunction(
             name: `${first_name} ${last_name}`,
             image: image_url,
         }
-        await User.findByIdAndUpdate(id,userData);
+        const updatedUser = await User.findByIdAndUpdate(id,userData);
+        if(!updatedUser){
+            throw new Error('User not found');
+        }
+        console.log(updatedUser);
     }
 )
 
