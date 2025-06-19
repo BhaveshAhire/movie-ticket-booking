@@ -16,7 +16,12 @@ const syncUserCreation = inngest.createFunction(
             name: `${first_name} ${last_name}`,
             image: image_url,
         }
-        await User.create(userData);
+        console.log("USER DATA",userData);
+        const newUser = await User.create(userData);
+        if(!newUser){
+            throw new Error('User not created');
+        }
+        console.log("NEW USER",newUser);
     }
 )
 
@@ -42,12 +47,7 @@ const syncUserUpdation = inngest.createFunction(
             name: `${first_name} ${last_name}`,
             image: image_url,
         }
-        console.log("USER DATA",userData);
-        const updatedUser = await User.findByIdAndUpdate(id,userData);
-        if(!updatedUser){
-            throw new Error('User not found');
-        }
-        console.log(updatedUser);
+        await User.findByIdAndUpdate(id,userData);
     }
 )
 
