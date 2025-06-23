@@ -3,6 +3,7 @@ import https from 'https';
 import Movie from '../modals/Movie.js';
 import { title } from 'process';
 import Show from '../modals/Show.js';
+import { inngest } from '../inngest/index.js';
 
 // Create a custom HTTPS agent to avoid socket reuse issues
 const agent = new https.Agent({ keepAlive: false });
@@ -100,6 +101,12 @@ export const addShow = async (req, res) => {
     if(showsTocreate.length>0){
       await Show.insertMany(showsTocreate);
     }
+
+    // Trigger Inngest event
+    await inngest.send({
+      name:"app/show.added",
+      data:{movieTitle: movie.title,movieId: movie._id.toString()}
+    })
 
   res.json({ success: true, message:'Show Added Successfully' });
 
