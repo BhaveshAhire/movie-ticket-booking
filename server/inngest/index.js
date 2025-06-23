@@ -2,6 +2,7 @@ import { Inngest } from "inngest";
 import User from "../modals/User.js";
 import Booking from "../modals/Bookings.js";
 import Show from "../modals/Show.js";
+import { sendEmail } from "../configs/nodeMailer.js";
  
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "movie-ticket-booking" });
@@ -74,5 +75,60 @@ const releaseSeatsAndDeleteBooking =  inngest.createFunction(
     }
 )
 
+
+// Inngest function to send email when user books a show
+const sendBookingConfirmationEmail = inngest.createFunction(
+    {id: "send-booking-confirmation-email"},
+    {event: 'app/show.booked'},
+    async ({event,step}) =>{
+        const {bookingId} = event.data;
+
+        const booking = await Booking.findById(bookingId).populate({
+            path:'show',
+            populate:{path:"movie",model:"Movie"}
+        }).populate('user');
+
+        await sendEmail({
+            to: booking.user.email,
+            subject: `Payment Confirmation: "${booking.show.movie.title}" booked!`,
+            body:  `
+    <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+      <h2 style="color: #4CAF50;">🎟️ Booking Confirmed!</h2>
+      <p>Hi ${booking.user.name},</p>
+      <p>Thank you for booking with <strong>MovieMania</strong>! Here are your booking details:</p>
+      
+      <table style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Movie</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${booking.show.movie.title}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Date & Time</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${new Date(booking.show.startTime).toLocaleString()}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Theater</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${booking.show.theater || "N/A"}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Seats</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${booking.bookedSeats.join(', ')}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Total Amount</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">₹${booking.totalAmount}</td>
+        </tr>
+      </table>
+
+      <p>We hope you enjoy your movie! 🍿</p>
+      <p style="margin-top: 30px;">Warm regards,<br><strong>MovieMania Team</strong></p>
+      <hr />
+      <p style="font-size: 12px; color: #999;">This is an automated email. Please do not reply.</p>
+    </div>
+  `
+        })
+    }
+)
+
 // Create an empty array where we'll export future Inngest functions
-export const functions = [syncUserCreation,syncUserDeletion,syncUserUpdation , releaseSeatsAndDeleteBooking];
+export const functions = [syncUserCreation,syncUserDeletion,syncUserUpdation,releaseSeatsAndDeleteBooking,sendBookingConfirmationEmail];
