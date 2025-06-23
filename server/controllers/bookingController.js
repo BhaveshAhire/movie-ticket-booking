@@ -1,3 +1,4 @@
+import { inngest } from "../inngest/index.js";
 import Booking from "../modals/Bookings.js";
 import Show from "../modals/Show.js"
 import stripe from 'stripe';
@@ -45,6 +46,7 @@ export const createBooking = async(req,res)=>{
 
         showData.markModified('occupiedSeats');
         await showData.save();
+        console.log("PAYMENTSSS",process.env.STRIPE_SECRET_KEY)
 
         // stripe gateway
         const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY)
@@ -74,6 +76,13 @@ export const createBooking = async(req,res)=>{
 
         booking.paymentLink = session.url;
         await booking.save();
+
+        await inngest.send({
+            name:"app/checkpayment",
+            data:{
+                bookingId: booking._id.toString()
+            }
+        })
 
          res.json({success:true, url: session.url});
     } catch (error) {
