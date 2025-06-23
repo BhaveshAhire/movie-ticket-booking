@@ -9,7 +9,6 @@ const syncUserCreation = inngest.createFunction(
     {id:'sync-user-from-clerk'},
     {event:'clerk/user.created'},
     async({event})=>{
-        console.log("EVENT",event);
         const {id,first_name,last_name,email_addresses,image_url} = event.data
         const userData = {
             _id: id,
@@ -17,12 +16,7 @@ const syncUserCreation = inngest.createFunction(
             name: `${first_name} ${last_name}`,
             image: image_url,
         }
-        console.log("USER DATA",userData);
-        const newUser = await User.create(userData);
-        if(!newUser){
-            throw new Error('User not created');
-        }
-        console.log("NEW USER",newUser);
+        await User.create(userData);
     }
 )
 
@@ -31,14 +25,8 @@ const syncUserDeletion = inngest.createFunction(
     {id:'delete-user-from-clerk'},
     {event:'clerk/user.deleted'},
     async({event})=>{
-        console.log("EVENT deleted",event);
         const {id} = event.data
-        console.log(" deleted ID",id);
-        const deletedUser = await User.findByIdAndDelete(id);
-        if(!deletedUser){
-            console.log("USER NOT FOUND");
-        }
-        console.log("DELETED USER",deletedUser);
+        await User.findByIdAndDelete(id);
     }
 )
 

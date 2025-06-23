@@ -7,6 +7,8 @@ import { timeFormat } from '../lib/timeFormat';
 import DateSelect from '../components/DateSelect';
 import MovieCard from '../components/MovieCard';
 import Loading from '../components/Loading';
+import { useAppContext } from '../context/AppContext';
+import toast from 'react-hot-toast';
 
 const MovieDetails = () => {
 
@@ -14,16 +16,36 @@ const MovieDetails = () => {
   const {id} = useParams();
   const [show,setShow] = useState(null);
 
-  const getShow = () =>{
-    const show = dummyShowsData.find(show => show._id === id)
+  const{shows,axios,getToken,user,image_base_url,fetchFavouriteMovies,favouriteMovies} = useAppContext()
 
-    if(show){
-        setShow({
-      movie: show,
-      dateTime: dummyDateTimeData
-    })
+  const getShow = async () =>{
+    try {
+      const {data} = await axios.get(`/api/shows/${id}`);
+      if(data.success){
+        setShow(data)
+      }
+    } catch (error) {
+      console.log(error)
     }
 
+  }
+
+  const handleFavourite = async () =>{
+    try {
+      if(!user){
+        toast.error("Please login to proceed");
+      }
+       const {data} = await axios.post('/api/user/update-favorite',{movieId:id},{
+            headers:{Authorization:`Bearer ${await getToken()}`}
+          })
+
+          if(data.success){
+            await fetchFavouriteMovies();
+            toast.success(data.message)
+          }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   useEffect(()=>{
@@ -33,7 +55,7 @@ const MovieDetails = () => {
   return show ? (
     <div className='px-6 md:px-16 lg:px-40 pt-30 md:pt-50'>
       <div className='flex flex-col md:flex-row gap-8 max-w-6xl mx-auto'>
-        <img src={show.movie.poster_path} alt="" className='max-md:mx-auto rounded-xl h-104 max-w-70 object-cover' />
+        <img src={image_base_url + show.movie.poster_path} alt="" className='max-md:mx-auto rounded-xl h-104 max-w-70 object-cover' />
 
         <div className='relative flex flex-col gap-3'>
           <BlurCircle top='-100px' left='-100px'/>
@@ -55,8 +77,8 @@ const MovieDetails = () => {
               Watch Trailer
             </button>
             <a className='px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer active:scale-95' href="#dateSelect">Buy Tickets</a>
-            <button className='bg-gray-700 p-2.5 rounded-full transition cursor-pointer active:scale-95'>
-              <Heart className='w-5 h-5'/>
+            <button onClick={handleFavourite} className='bg-gray-700 p-2.5 rounded-full transition cursor-pointer active:scale-95'>
+              <Heart className={`w-5 h-5 ${favouriteMovies.find(movie => movie._id === id)? 'fill-primary text-primary':''}`}/>
             </button>
           </div>
 
@@ -69,7 +91,7 @@ const MovieDetails = () => {
           {
             show.movie.casts.slice(0,12).map((cast,index)=>(
               <div key={index} className='flex flex-col items-center text-center' >
-                <img src={cast.profile_path} alt="" className='rounded-full h-20 md:h-20 aspect-square object-cover' />
+                <img src={image_base_url + cast.profile_path} alt="" className='rounded-full h-20 md:h-20 aspect-square object-cover' />
                 <p className='font-medium text-xs mt-3'>{cast.name}</p>
               </div>
             ))
@@ -82,7 +104,7 @@ const MovieDetails = () => {
       <p className='text-lg font-medium mt-20 mb-8'>You May Also Like</p>
       <div className='flex flex-wrap max-sm:justify-center gap-8'>
         {
-          dummyShowsData.slice(0,4).map((movie,index)=>(
+          shows.slice(0,4).map((movie,index)=>(
             <MovieCard key={index} movie={movie}/>
           ))
         }

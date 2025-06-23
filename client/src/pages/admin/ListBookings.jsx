@@ -4,22 +4,36 @@ import Loading from '../../components/Loading';
 import { Table } from 'lucide-react';
 import Title from './Title';
 import { dateFormat } from '../../lib/dateFormat';
+import { useAppContext } from '../../context/AppContext';
 
 const ListBookings = () => {
 
   const currency = import.meta.env.VITE_CURRENCY
+
+  const{axios,getToken,user} = useAppContext()
   
      const [bookings,setBookings] = useState([]);
      const [loading,setLoading] = useState(true);
 
      const getAllBookings= async() =>{
-      setBookings(dummyBookingData);
-      setLoading(false);
+     try {
+       const { data } = await axios.get('/api/admin/all-bookings', {
+      headers: {
+        Authorization: `Bearer ${await getToken()}`
+      }
+    });
+    setBookings(data.bookings)
+     } catch (error) {
+      console.log(error);
+     }
+     setLoading(false)
      }
 
      useEffect(()=>{
-      getAllBookings();
-     },[])
+      if(user){
+        getAllBookings();
+      }
+     },[user])
      console.log("Bookings",bookings);
   return !loading?(
     <>
