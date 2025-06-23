@@ -104,11 +104,7 @@ const sendBookingConfirmationEmail = inngest.createFunction(
         </tr>
         <tr>
           <td style="padding: 8px; border: 1px solid #ddd;"><strong>Date & Time</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${new Date(booking.show.startTime).toLocaleString()}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Theater</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${booking.show.theater || "N/A"}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${new Date(booking.show.showDateTime).toLocaleString()}</td>
         </tr>
         <tr>
           <td style="padding: 8px; border: 1px solid #ddd;"><strong>Seats</strong></td>
@@ -116,7 +112,7 @@ const sendBookingConfirmationEmail = inngest.createFunction(
         </tr>
         <tr>
           <td style="padding: 8px; border: 1px solid #ddd;"><strong>Total Amount</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">₹${booking.totalAmount}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">₹${booking.amount}</td>
         </tr>
       </table>
 
