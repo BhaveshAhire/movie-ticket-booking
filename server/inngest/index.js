@@ -237,7 +237,7 @@ const sendNewShowNotifications = inngest.createFunction(
                        <p>Don't miss your chance to grab the best seats before they're gone!</p>
 
                      <div style="text-align: center; margin: 30px 0;">
-                          <a href="https://your-domain.com/movie/${movieId}" target="_blank" style="background-color: #ff5722; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                          <a href="https://movie-ticket-booking-tau-seven.vercel.app/movies/${movieId}" target="_blank" style="background-color: #ff5722; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
                              View & Book Now
                           </a>
                      </div>
